@@ -226,7 +226,7 @@ $$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}$$
 
 At $t = 1$: $\hat{m}_1 = m_1 / (1 - 0.9) = 0.1 g_1 / 0.1 = g_1$. The corrected estimate is exactly $g_1$, as desired.
 
-As $t$ increases, $\beta_1^t \to 0$ and $1 - \beta_1^t \to 1$, so the correction factor approaches 1 and has no effect at large $t$. The correction is significant only during the warm-up phase (roughly the first $1/(1-\beta_1)$ steps, which is 10 steps for $\beta_1 = 0.9$ and 1000 steps for $\beta_1 = 0.999$).
+As $t$ increases, $\beta_1^t \to 0$ and $1 - \beta_1^t \to 1$, so the correction factor approaches 1 and has no effect at large $t$. The correction is significant only during the warm-up phase (roughly the first 100 steps for $\beta_1 = 0.9$ and approximately the first 3000 steps for $\beta_1 = 0.999$, since $0.999^{1000} \approx 0.368$ so the bias remains substantial well past step 1000).
 
 The same logic applies to $\hat{v}_t$: with $\beta_2 = 0.999$, the second moment requires roughly 1000 steps before it is representative.
 

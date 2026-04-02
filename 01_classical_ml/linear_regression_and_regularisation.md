@@ -240,7 +240,7 @@ For Ridge regression:
 
 **As $\lambda \to 0$**: Ridge approaches OLS. Bias approaches zero (OLS is unbiased), but variance is large when features are correlated or $n$ is small.
 
-**As $\lambda \to \infty$**: $\hat{\beta}_{\text{Ridge}} \to 0$. The model predicts the training mean for every input. Bias is $\|X\beta^*\|_2^2 / n$ (large), but variance approaches zero.
+**As $\lambda \to \infty$**: $\hat{\beta}_{\text{Ridge}} \to 0$. The prediction at a test point $x_0$ is $\hat{y}_0 = x_0^\top \hat{\beta} \to 0$, so the bias is $x_0^\top \beta^*$ (large), but variance approaches zero.
 
 **Optimal $\lambda$**: There exists a $\lambda^*$ that minimises test MSE by trading off bias and variance. This is found empirically via cross-validation.
 

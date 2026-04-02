@@ -193,7 +193,7 @@ The corresponding feature map channel is also removed from the next layer's inpu
 - **Taylor expansion:** Estimate the change in loss from removing a unit using first-order
   Taylor expansion of the loss with respect to activations.
 
-#### Lottery Ticket Hypothesis (LeCun et al., revisited by Frankle & Carlin 2019)
+#### Lottery Ticket Hypothesis (Frankle & Carlin, 2019)
 
 A randomly initialised dense network contains small subnetworks ("winning tickets") that,
 when trained in isolation from their original initialisation, match the full network's

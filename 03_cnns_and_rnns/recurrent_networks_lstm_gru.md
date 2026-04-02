@@ -161,9 +161,9 @@ The product of Jacobians $\prod_{j=k+1}^{t} \frac{\partial \mathbf{h}_j}{\partia
 
 For a vanilla RNN, the Jacobian of the hidden state recurrence is:
 
-$$\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-1}} = \text{diag}(1 - \mathbf{h}_{t-1}^2) \cdot W_{hh}$$
+$$\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-1}} = \text{diag}(1 - \mathbf{h}_t^2) \cdot W_{hh}$$
 
-(for tanh activation, where $\text{diag}(1 - \mathbf{h}^2)$ is the derivative of tanh)
+(for tanh activation, where $\text{diag}(1 - \mathbf{h}_t^2)$ is the derivative of tanh evaluated at $\mathbf{h}_t$)
 
 For a sequence of length $T$, the product of $T-1$ such Jacobians is taken. Let $\lambda_{\max}$ be the largest singular value of $W_{hh}$ scaled by the tanh derivative.
 

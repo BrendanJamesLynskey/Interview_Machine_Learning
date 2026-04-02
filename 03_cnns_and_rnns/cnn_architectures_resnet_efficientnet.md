@@ -60,7 +60,7 @@ ResNet (Residual Network) stacks residual blocks into stages that progressively 
 | Stage 4 | $7 \times 7$ | Bottleneck, 512 | $\times 3$ |
 | GAP + FC | $1000$ | Global avg pool + softmax | 1 |
 
-Total depth: $1 + 3(3) + 4(3) + 6(3) + 3(3) + 1 + 1 = 50$ weight layers.
+Total depth: $1 + (3 + 4 + 6 + 3) \times 3 + 1 = 1 + 48 + 1 = 50$ weight layers.
 
 ---
 
