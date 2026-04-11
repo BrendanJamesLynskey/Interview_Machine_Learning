@@ -80,7 +80,7 @@ $$\text{score}(\mathbf{y}) = \sum_{t=1}^{T} \log P(\mathbf{y}_t | \mathbf{y}_{<t
 
 Beam search is the standard at inference for seq2seq models. Larger beams generally improve quality up to a point (beam width 4-10 is typical), after which they give diminishing returns and can even hurt (the model becomes overly conservative).
 
-**Length normalisation**: beam search is biased toward shorter sequences because each token adds a $\log P(\cdot) \leq 0$ term. Divide the score by $T^\alpha$ (typically $\alpha = 0.6$--$0.7$) to penalise length bias.
+**Length normalisation**: beam search is biased toward shorter sequences because each token adds a $\log P(\cdot) \leq 0$ term. Divide the score by $T^\alpha$ (typically $\alpha = 0.6\text{--}0.7$) to penalise length bias.
 
 ---
 

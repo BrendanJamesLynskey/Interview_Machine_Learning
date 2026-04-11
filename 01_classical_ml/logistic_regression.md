@@ -287,7 +287,7 @@ Generate synthetic minority-class examples by interpolating between existing min
 
 **Technique 3: Threshold tuning**
 
-The default classification threshold is $0.5$. For imbalanced problems, lower thresholds (e.g., $0.1$--$0.3$) increase recall at the cost of precision. Choose the threshold on the validation set by optimising the metric that matters for your application (F1-score, precision at fixed recall, etc.). The ROC curve and precision-recall curve are invaluable tools here.
+The default classification threshold is $0.5$. For imbalanced problems, lower thresholds (e.g., $0.1\text{--}0.3$) increase recall at the cost of precision. Choose the threshold on the validation set by optimising the metric that matters for your application (F1-score, precision at fixed recall, etc.). The ROC curve and precision-recall curve are invaluable tools here.
 
 **Technique 4: Alternative loss functions**
 

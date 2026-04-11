@@ -328,7 +328,7 @@ Why SVMs win: the kernel encodes domain knowledge about what constitutes "simila
 
 **Scenario 2: Very small datasets -- materials science or drug discovery**
 
-Predicting molecular properties from chemical descriptors. With $n = 50$--$200$ labelled molecules and $d = 100$--$1{,}000$ descriptor features:
+Predicting molecular properties from chemical descriptors. With $n = 50\text{--}200$ labelled molecules and $d = 100\text{--}1{,}000$ descriptor features:
 - A neural network with enough capacity to model non-linearities has far too many parameters to avoid overfitting
 - An RBF SVM has an implicit infinite-dimensional feature space but is regularised by the margin constraint, achieving good generalisation with few examples
 

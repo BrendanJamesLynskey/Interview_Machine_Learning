@@ -100,7 +100,7 @@ Note: **no bias parameter $\beta$** (no shift term). The only learnable paramete
 
 **Why RMSNorm?**
 - Re-centering (mean subtraction) in LayerNorm is often redundant in practice, as the model learns to use the $\beta$ parameters to shift the distribution.
-- Removing the mean computation saves $\approx 7\%$--$15\%$ of the LayerNorm computation.
+- Removing the mean computation saves $\approx 7\%\text{--}15\%$ of the LayerNorm computation.
 - Empirically matches LayerNorm quality on language model benchmarks at reduced cost.
 
 RMSNorm is used in LLaMA, LLaMA-2, Mistral, Falcon, and other large language models. It is the preferred normalisation layer for modern transformer variants where inference efficiency matters.
@@ -177,7 +177,7 @@ $$y_i = \gamma \hat{x}_i + \beta$$
 
 Together, $\gamma$ and $\beta$ allow BatchNorm to learn the "best" scale and shift for each feature. They are initialised to $\gamma = 1$ and $\beta = 0$ so that at the start of training BatchNorm performs pure normalisation with no learned transformation.
 
-**Common mistake:** Confusing $\gamma$/$\beta$ with the weight/bias of a preceding linear layer. They are separate, BN-specific parameters. A linear layer followed by BatchNorm should typically not include a bias (the $\beta$ of BatchNorm provides an equivalent shift): `nn.Linear(in, out, bias=False)` followed by `nn.BatchNorm1d(out)`.
+**Common mistake:** Confusing $\gamma/\beta$ with the weight/bias of a preceding linear layer. They are separate, BN-specific parameters. A linear layer followed by BatchNorm should typically not include a bias (the $\beta$ of BatchNorm provides an equivalent shift): `nn.Linear(in, out, bias=False)` followed by `nn.BatchNorm1d(out)`.
 
 ---
 
@@ -373,7 +373,7 @@ $$y_i = \gamma \hat{x}_i^{renorm} + \beta$$
 
 The clipping of $r$ and $d$ prevents the correction from being too large at the start of training (when running stats are inaccurate). Clipping limits are annealed from zero (no correction, equivalent to standard BN) to the final values during training.
 
-**Practical result:** Batch Renorm allows BatchNorm-like training stability even with batch sizes of $m = 2$--$4$, and is more robust to non-i.i.d. batches. The model trained with Batch Renorm has smaller train/inference discrepancy because the running statistics more accurately represent the normalisation seen during training.
+**Practical result:** Batch Renorm allows BatchNorm-like training stability even with batch sizes of $m = 2\text{--}4$, and is more robust to non-i.i.d. batches. The model trained with Batch Renorm has smaller train/inference discrepancy because the running statistics more accurately represent the normalisation seen during training.
 
 ---
 

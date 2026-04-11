@@ -157,7 +157,7 @@ CutMix tends to outperform Mixup on image tasks because it produces more natural
 
 **AutoAugment (Cubuk et al., 2019):** Uses reinforcement learning to search for the optimal augmentation policy (a sequence of operations and their magnitudes) for a specific dataset. Achieves state-of-the-art augmentation but requires expensive search (5,000 GPU hours for ImageNet). Transferable policies exist for common datasets.
 
-**RandAugment (Cubuk et al., 2020):** Simplifies AutoAugment by selecting $N$ random augmentation operations from a fixed set and applying them each with a global magnitude $M$. RandAugment has only two hyperparameters ($N$ and $M$) instead of the full per-operation policy. Typical values: $N = 2$, $M = 9$--$10$. RandAugment achieves performance close to AutoAugment with trivial search cost and is the standard augmentation pipeline for ViT and EfficientNet training.
+**RandAugment (Cubuk et al., 2020):** Simplifies AutoAugment by selecting $N$ random augmentation operations from a fixed set and applying them each with a global magnitude $M$. RandAugment has only two hyperparameters ($N$ and $M$) instead of the full per-operation policy. Typical values: $N = 2$, $M = 9\text{--}10$. RandAugment achieves performance close to AutoAugment with trivial search cost and is the standard augmentation pipeline for ViT and EfficientNet training.
 
 ---
 
@@ -279,7 +279,7 @@ $$\text{augmented}(x) = \text{Op}_N \circ \cdots \circ \text{Op}_1 (x)$$
 Grid search over $\{N, M\}$ combinations using validation accuracy. The search space is small ($3 \times 5 = 15$ combinations for typical ranges), making RandAugment vastly cheaper to tune than AutoAugment's RL-based search. The optimal $N$ and $M$ typically increase with model capacity and training duration: larger models trained longer benefit from stronger augmentation to prevent overfitting.
 
 Typical values:
-- CIFAR-10/100: $N = 1$--$2$, $M = 5$--$10$
+- CIFAR-10/100: $N = 1\text{--}2$, $M = 5\text{--}10$
 - ImageNet (ResNet-50): $N = 2$, $M = 9$
 - ImageNet (ViT-B): $N = 2$, $M = 15$ (stronger augmentation for larger models)
 
@@ -373,7 +373,7 @@ In practice, many top-performing recipes use both (ViT, DeiT use Mixup + CutMix 
 
 1. **Strong colour jitter / hue rotation:** Dermoscopy diagnosis is heavily colour-dependent (e.g., blue-white structures are a specific diagnostic feature). Rotating hue by 30° changes a diagnostic colour feature. Avoid hue augmentation; limit saturation changes.
 
-2. **Mixup / CutMix with standard settings:** Mixing two different lesion images creates an image that could be diagnostically misleading. The mixed label (e.g., "50% melanoma, 50% benign") is not grounded in clinical reality. If used, keep $\alpha$ small ($\alpha = 0.1$--$0.2$) and monitor whether it hurts sensitivity on the minority class (melanoma).
+2. **Mixup / CutMix with standard settings:** Mixing two different lesion images creates an image that could be diagnostically misleading. The mixed label (e.g., "50% melanoma, 50% benign") is not grounded in clinical reality. If used, keep $\alpha$ small ($\alpha = 0.1\text{--}0.2$) and monitor whether it hurts sensitivity on the minority class (melanoma).
 
 3. **Extreme scale (crop scale < 0.5):** Cropping out most of the lesion removes the object of interest. Unlike ImageNet objects which appear throughout the image, dermoscopy lesions are always centred.
 

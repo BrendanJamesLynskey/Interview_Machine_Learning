@@ -311,7 +311,7 @@ This is 1000 times the intended learning rate. The parameter may receive an upda
 - NaN loss values in extreme cases.
 - After the initial instability, training may recover slowly or not at all.
 
-**Fix**: Add at least $W = 0.5\%$--$1\%$ of total steps as warmup. For 600,000 total steps, $W = 3000$--$6000$.
+**Fix**: Add at least $W = 0.5\%\text{--}1\%$ of total steps as warmup. For 600,000 total steps, $W = 3000\text{--}6000$.
 
 ### Failure Mode 2: Warmup Too Short
 
@@ -329,7 +329,7 @@ For 50,000 steps the model is trained with $\eta = 3 \times 10^{-4}$ instead of 
 
 **Observable symptoms**: Training loss decreases slowly in the first phase; the curve shows a clear "ramp" in the loss improvement rate that matches the learning rate ramp.
 
-**Guideline**: Warmup fraction should be in the range of $0.1\%$--$2\%$ of total steps for most transformer pre-training recipes.
+**Guideline**: Warmup fraction should be in the range of $0.1\%\text{--}2\%$ of total steps for most transformer pre-training recipes.
 
 ### Failure Mode 4: Ignoring the Schedule Beyond $T_{max}$
 

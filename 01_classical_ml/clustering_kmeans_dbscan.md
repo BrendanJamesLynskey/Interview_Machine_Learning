@@ -287,7 +287,7 @@ HDBSCAN handles multi-density data well, is more robust to $\varepsilon$ choice,
 
 **K-Means at scale:**
 - $O(nKd)$ per iteration, typically $O(100)$ iterations: for $n = 10^7$, $K = 100$, $d = 50$: approximately $5 \times 10^{11}$ operations per run -- feasible with minibatch K-Means
-- **MiniBatch K-Means**: update centroids using mini-batches of size $b \ll n$. Each step is $O(bKd)$; convergence requires $O(n/b)$ batches per epoch. Practically $10$--$100\times$ faster than full K-Means with slightly worse inertia
+- **MiniBatch K-Means**: update centroids using mini-batches of size $b \ll n$. Each step is $O(bKd)$; convergence requires $O(n/b)$ batches per epoch. Practically $10\text{--}100\times$ faster than full K-Means with slightly worse inertia
 - Suitable for recommendation: customer segments tend to be roughly spherical in a well-designed feature space
 
 **DBSCAN at scale:**
@@ -306,7 +306,7 @@ HDBSCAN handles multi-density data well, is more robust to $\varepsilon$ choice,
 
 Use **MiniBatch K-Means** as the primary clustering approach:
 
-1. Pre-process: standardise all features, apply PCA to reduce to $d = 30$--$50$ dimensions
+1. Pre-process: standardise all features, apply PCA to reduce to $d = 30\text{--}50$ dimensions
 2. Tune $K$ using silhouette score on a 100K subsample (to make computation tractable)
 3. Train MiniBatch K-Means with `batch_size=10000`, `max_iter=100` over the full 10M dataset
 4. Interpret clusters by inspecting centroid feature values and the most representative transactions per cluster

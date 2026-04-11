@@ -133,7 +133,7 @@ The second term is the cross-entropy with the uniform distribution, penalising o
 - Improves calibration: the model's output probabilities are more reflective of true class uncertainty.
 - Acts as a regulariser for the logit space, preventing the model from becoming overconfident on training examples.
 
-**Typical values:** $\epsilon = 0.1$ for image classification (used in Inception-v4, ViT, DeiT); $\epsilon = 0.1$ for machine translation; lower values ($\epsilon = 0.01$--$0.05$) when the training labels are known to be high quality.
+**Typical values:** $\epsilon = 0.1$ for image classification (used in Inception-v4, ViT, DeiT); $\epsilon = 0.1$ for machine translation; lower values ($\epsilon = 0.01\text{--}0.05$) when the training labels are known to be high quality.
 
 **Caveat:** Label smoothing hurts performance when temperature scaling or distillation is used, because the teacher's soft labels already encode class uncertainty. Applying label smoothing on top of soft targets can conflate the uncertainty signal.
 
@@ -207,7 +207,7 @@ The $\gamma$ (scale) and $\beta$ (shift) parameters of normalisation layers have
 
 **Standard practice in transformers (e.g., GPT, BERT):**
 
-Apply weight decay only to weight matrices (linear layers, embedding tables). Exclude biases, LayerNorm $\gamma$/$\beta$, and BatchNorm parameters.
+Apply weight decay only to weight matrices (linear layers, embedding tables). Exclude biases, LayerNorm $\gamma/\beta$, and BatchNorm parameters.
 
 ```python
 decay_params = [p for n, p in model.named_parameters()

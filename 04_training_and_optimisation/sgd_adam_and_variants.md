@@ -121,7 +121,7 @@ $$\theta_{t+1} = \theta_t - \eta \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \eps
 
 The weight decay term $\lambda \theta_t$ is not passed through the adaptive scaling. This restores the intended L2 regularisation semantics. AdamW is now the default optimiser for transformer pre-training (BERT, GPT, ViT) and typically outperforms Adam with L2 on language and vision tasks.
 
-**Typical AdamW hyperparameters for transformer training:** $\beta_1 = 0.9$, $\beta_2 = 0.95$--$0.999$, $\lambda = 0.01$--$0.1$, $\eta$ from a schedule.
+**Typical AdamW hyperparameters for transformer training:** $\beta_1 = 0.9$, $\beta_2 = 0.95\text{--}0.999$, $\lambda = 0.01\text{--}0.1$, $\eta$ from a schedule.
 
 ---
 
@@ -295,13 +295,13 @@ An alternative is to divide by $k$ once after accumulation, using `grad /= k` be
 
 **(1) Fine-tuning a pretrained vision model (e.g., ResNet-50 on a new classification task):**
 
-Prefer **SGD with momentum** ($\beta = 0.9$, $\eta \approx 10^{-3}$--$10^{-2}$, with cosine or step decay).
+Prefer **SGD with momentum** ($\beta = 0.9$, $\eta \approx 10^{-3}\text{--}10^{-2}$, with cosine or step decay).
 
 Rationale: The pretrained weights are already in a good region of parameter space. The goal is to refine them without large, erratic steps. SGD with a well-tuned learning rate schedule tends to find flatter, better-generalising minima for image classification tasks (this observation drove the "SGD generalises better than Adam" literature, e.g., Wilson et al., 2017). The lower adaptivity of SGD means it does not over-fit to the specific gradient magnitudes of the new task distribution.
 
 **(2) Training a transformer from scratch (e.g., BERT-base):**
 
-Use **AdamW** ($\beta_1 = 0.9$, $\beta_2 = 0.999$, $\lambda = 0.01$--$0.1$, $\eta = 10^{-4}$--$3 \times 10^{-4}$) with linear warmup followed by cosine or linear decay.
+Use **AdamW** ($\beta_1 = 0.9$, $\beta_2 = 0.999$, $\lambda = 0.01\text{--}0.1$, $\eta = 10^{-4}\text{--}3 \times 10^{-4}$) with linear warmup followed by cosine or linear decay.
 
 Rationale: Transformers have diverse parameter scales across layers (embedding tables, attention projections, feed-forward layers) and sparse gradient patterns (attention weights). Adam's per-parameter adaptivity is critical here: a global learning rate suitable for the feed-forward layers may be too large or too small for the embedding gradients. AdamW's decoupled weight decay prevents the L2 penalty from being absorbed into the gradient scaling. Linear warmup is essential to stabilise the second-moment estimates before taking large steps.
 
@@ -464,7 +464,7 @@ Advantages:
 - Empirically matches or exceeds AdamW quality on vision transformers and large language models while being $\sim 1.5\times$ more memory-efficient.
 
 Disadvantages:
-- The learning rate must be tuned differently from Adam. Because the update magnitude is always $\eta$ per step (before weight decay), a Lion learning rate is typically $3$--$10\times$ smaller than the equivalent AdamW learning rate for the same model.
+- The learning rate must be tuned differently from Adam. Because the update magnitude is always $\eta$ per step (before weight decay), a Lion learning rate is typically $3\text{--}10\times$ smaller than the equivalent AdamW learning rate for the same model.
 - The weight decay coefficient also interacts differently: since the sign of the weight decay term is added to the sign update, the effective regularisation strength differs.
 - Less well-understood theoretically. The convergence guarantees for non-convex objectives are less mature than for Adam.
 - Can be less robust on tasks with high gradient noise (very small batches), where the sign of the gradient estimate is frequently wrong.

@@ -112,7 +112,7 @@ $$\eta_t = \begin{cases}
 \eta_{min} + \dfrac{1}{2}(\eta_{max} - \eta_{min})\left(1 + \cos\left(\dfrac{\pi(t - W)}{T - W}\right)\right) & t > W
 \end{cases}$$
 
-Typical values: $W = 1$--$5\%$ of total steps $T$, $\eta_{min} = 0.1 \eta_{max}$ or $0$.
+Typical values: $W = 1\text{--}5\%$ of total steps $T$, $\eta_{min} = 0.1 \eta_{max}$ or $0$.
 
 This schedule was used for GPT-2 (OpenAI), BERT (Google), and is the default in most HuggingFace training recipes.
 
@@ -324,7 +324,7 @@ $$\eta_{300000} = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 + \cos(\pi
 
 **Answer:**
 
-Super-Convergence (Smith & Touvron, 2018) is the empirical observation that certain network/dataset combinations can be trained in $5$--$10\times$ fewer iterations than standard training recipes, using a single learning rate cycle that reaches a much higher peak learning rate than would normally be stable.
+Super-Convergence (Smith & Touvron, 2018) is the empirical observation that certain network/dataset combinations can be trained in $5\text{--}10\times$ fewer iterations than standard training recipes, using a single learning rate cycle that reaches a much higher peak learning rate than would normally be stable.
 
 **The key empirical finding: the Learning Rate Range Test (LR Range Test).**
 
@@ -334,7 +334,7 @@ Smith's procedure: start training with a very small $\eta$ and increase it linea
 - At some point, the loss reaches a minimum, then begins to increase as $\eta$ is too large and the training becomes unstable.
 - The optimal range is approximately between the "start of fast decrease" and the "point before the loss starts rising significantly."
 
-The maximum learning rate in OneCycleLR is set to this identified stable maximum (which is often $5$--$10\times$ higher than what intuition would suggest).
+The maximum learning rate in OneCycleLR is set to this identified stable maximum (which is often $5\text{--}10\times$ higher than what intuition would suggest).
 
 **Why OneCycleLR enables this:**
 
@@ -437,7 +437,7 @@ The "temperature" of the steady-state is proportional to $\eta$: the larger the 
 **The learning rate schedule interaction:** When rewinding weights to step $k$, it is critical to also rewind the learning rate schedule to step $k$ (not restart from step 0). If the schedule is restarted from step 0 while the weights are at step $k$ values, the high initial learning rate may disrupt the already-partially-trained weights, causing worse performance than expected. Rewinding the schedule ensures that the amount of learning rate "budget" given to the subnetwork matches the amount given to the full network from that same starting point.
 
 **Practical guidance:**
-- Use $k \approx 0.1\%$--$1\%$ of total training steps as the rewind point.
+- Use $k \approx 0.1\%\text{--}1\%$ of total training steps as the rewind point.
 - Rewind both weights and learning rate schedule.
 - Prune globally by magnitude (not per-layer), then rewind.
 - Iterative magnitude pruning (prune 20%, rewind, retrain, repeat) finds better tickets than one-shot pruning at the same final sparsity.

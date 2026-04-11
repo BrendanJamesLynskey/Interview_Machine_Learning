@@ -172,7 +172,7 @@ When evaluation is performed in `model.train()` mode:
 - BatchNorm uses per-batch statistics instead of the running statistics.
 - Dropout (if present) remains active.
 
-Each evaluation mini-batch is normalised by its own statistics. A mini-batch of 32 validation images has very different statistics from the 50,000-image training distribution. The per-batch normalisation in eval effectively changes the feature distribution that the learned $\gamma$/$\beta$ parameters were calibrated for. This introduces stochastic noise into the evaluation metrics, making validation accuracy appear lower than the true inference performance.
+Each evaluation mini-batch is normalised by its own statistics. A mini-batch of 32 validation images has very different statistics from the 50,000-image training distribution. The per-batch normalisation in eval effectively changes the feature distribution that the learned $\gamma/\beta$ parameters were calibrated for. This introduces stochastic noise into the evaluation metrics, making validation accuracy appear lower than the true inference performance.
 
 Additionally, because training accuracy is computed with the same `model.train()` mode, it benefits from the fact that each training batch is normalised by its own (favourable) statistics -- effectively seeing a cleaner version of the data than validation sees.
 
@@ -459,13 +459,13 @@ Beyond visual inspection of curves, these quantitative measures are useful:
 
 $$\text{Gap}_{acc} = \text{Train Acc} - \text{Val Acc}$$
 
-Rule of thumb: $< 3\%$ is well-regularised; $3\%$--$10\%$ is moderate; $> 10\%$ warrants intervention.
+Rule of thumb: $< 3\%$ is well-regularised; $3\%\text{--}10\%$ is moderate; $> 10\%$ warrants intervention.
 
 **Loss ratio**:
 
 $$\text{Ratio}_{loss} = \frac{\text{Val Loss}}{\text{Train Loss}}$$
 
-At convergence, a ratio of $1.0$--$1.3$ is typical. Ratios $> 2.0$ indicate significant overfitting.
+At convergence, a ratio of $1.0\text{--}1.3$ is typical. Ratios $> 2.0$ indicate significant overfitting.
 
 **Overfitting coefficient** (at epoch $t$ relative to best val epoch $t^*$):
 
