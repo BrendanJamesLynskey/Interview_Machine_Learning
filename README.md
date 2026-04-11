@@ -43,6 +43,7 @@ Core concepts for deep neural networks.
 - [Activation Functions](./02_deep_learning_foundations/activation_functions.md)
 - [Loss Functions](./02_deep_learning_foundations/loss_functions.md)
 - [Weight Initialisation](./02_deep_learning_foundations/weight_initialisation.md)
+- [Attention and Transformers](./02_deep_learning_foundations/attention_and_transformers.md)
 
 ### Worked Problems
 
