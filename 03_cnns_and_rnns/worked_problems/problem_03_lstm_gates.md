@@ -207,7 +207,7 @@ Taking logarithms:
 
 $$k \ln(0.9) < \ln(0.01)$$
 
-$$k > \frac{\ln(0.01)}{\ln(0.9)} = \frac{-4.605}{-0.105} \approx 43.8$$
+$$k > \frac{\ln(0.01)}{\ln(0.9)} = \frac{-4.605}{-0.1054} \approx 43.7$$
 
 So gradients decay below 1% after approximately **44 steps**.
 
@@ -311,7 +311,7 @@ Time step t=1, x=1.0:
   forget gate f = 0.5000
   input gate  i = 0.7311
   cell cand  c~ = 0.9640
-  cell state  c = 0.7050
+  cell state  c = 0.7048
   output gate o = 0.7311
   hidden state h = 0.4440
 
@@ -319,9 +319,9 @@ Time step t=2, x=0.0:
   forget gate f = 0.5000
   input gate  i = 0.5000
   cell cand  c~ = 0.0000
-  cell state  c = 0.3525
+  cell state  c = 0.3524
   output gate o = 0.5000
-  hidden state h = 0.1701
+  hidden state h = 0.1692
 ```
 
 ---

@@ -14,7 +14,7 @@ Designing a learning rate schedule is not a matter of plugging in default values
 
 ## Scenario
 
-You are training a 345M-parameter language model (GPT-2 large scale) from scratch with the following specifications:
+You are training a 345M-parameter language model (GPT-2 medium scale) from scratch with the following specifications:
 
 - **Optimiser**: AdamW, $\beta_1 = 0.9$, $\beta_2 = 0.95$, $\epsilon = 10^{-8}$, $\lambda = 0.1$
 - **Total training steps**: $T = 600{,}000$
@@ -74,11 +74,11 @@ Both formulas agree at the boundary. The schedule is continuous (though not smoo
 
 $$\text{progress} = \frac{100000 - 4000}{600000 - 4000} = \frac{96000}{596000} \approx 0.16107$$
 
-$$\cos(\pi \times 0.16107) = \cos(0.50609) \approx 0.87357$$
+$$\cos(\pi \times 0.16107) = \cos(0.50603) \approx 0.87468$$
 
-$$\eta_{100000} = 6 \times 10^{-5} + 2.7 \times 10^{-4}(1 + 0.87357) = 6 \times 10^{-5} + 2.7 \times 10^{-4} \times 1.87357$$
+$$\eta_{100000} = 6 \times 10^{-5} + 2.7 \times 10^{-4}(1 + 0.87468) = 6 \times 10^{-5} + 2.7 \times 10^{-4} \times 1.87468$$
 
-$$= 6 \times 10^{-5} + 5.059 \times 10^{-4} = 5.659 \times 10^{-4}$$
+$$= 6 \times 10^{-5} + 5.062 \times 10^{-4} = 5.662 \times 10^{-4}$$
 
 The learning rate has decayed only slightly from the peak at this early stage -- a consequence of the cosine curve's slow initial decay.
 
@@ -303,7 +303,7 @@ At step 1, if a parameter has gradient $g_1 = 10^{-3}$, then $\hat{v}_1 \approx 
 
 $$\eta_{eff} = \frac{6 \times 10^{-4}}{\sqrt{10^{-6}} + 10^{-8}} \approx \frac{6 \times 10^{-4}}{10^{-3}} = 0.6$$
 
-This is 1000 times the intended learning rate. The parameter may receive an update of magnitude $0.6 \times g_1 = 6 \times 10^{-4}$, which is fine here. But if another parameter has $g = 10^{-6}$ (very small), then $\eta_{eff} \approx 6 \times 10^{-4} / (10^{-6} + 10^{-8}) \approx 6 \times 10^{-4} / 10^{-6} = 600$, an astronomically large step.
+This is 1000 times the intended learning rate, and the parameter receives an update of magnitude $0.6 \times g_1 = 6 \times 10^{-4}$. If another parameter has $g = 10^{-6}$, then $\eta_{eff} \approx 6 \times 10^{-4} / 10^{-6} = 600$ -- but its update is still $600 \times 10^{-6} = 6 \times 10^{-4}$. At step 1, Adam moves *every* parameter by about $\eta$, whatever its gradient scale. The problem is not one enormous step: it is that every parameter, including those whose gradients are tiny or mostly noise, takes full-size steps based on second-moment estimates built from only a handful of samples (Liu et al., 2020, "On the Variance of the Adaptive Learning Rate and Beyond").
 
 **Observable symptoms**:
 - Training loss spikes or diverges in the first 100--500 steps.
@@ -347,7 +347,7 @@ When fine-tuning a pretrained model (rather than training from scratch), the sch
 
 ### Fine-Tuning Scenario
 
-- **Starting model**: GPT-2 large (345M parameters, pretrained)
+- **Starting model**: GPT-2 medium (345M parameters, pretrained)
 - **Fine-tuning dataset**: 500M tokens of domain-specific text
 - **Batch size**: 256 sequences of 512 tokens
 - **Total fine-tuning steps**: $T_{ft} = 20{,}000$ steps
@@ -429,13 +429,13 @@ scheduler = optim.lr_scheduler.OneCycleLR(
     pct_start=0.1,           # 10% of steps = 5,000 steps for warmup
     anneal_strategy='cos',   # cosine annealing in both warmup and decay phases
     div_factor=10.0,         # initial LR = max_lr / 10 = 1e-4
-    final_div_factor=1e3,    # final LR = max_lr / (10 * 1e3) = 1e-6
+    final_div_factor=1e3,    # final LR = initial LR / 1e3 = 1e-4 / 1e3 = 1e-7
 )
 ```
 
 **Learning rate profile**:
-- Steps 0--5,000: linear ramp from $10^{-4}$ to $10^{-3}$
-- Steps 5,000--50,000: cosine decay from $10^{-3}$ to $10^{-6}$
+- Steps 0--5,000: cosine-shaped ramp (because `anneal_strategy='cos'`) from $10^{-4}$ to $10^{-3}$
+- Steps 5,000--50,000: cosine decay from $10^{-3}$ to $10^{-7}$
 
 OneCycleLR is particularly effective here because:
 1. The 5-epoch training budget is small; a single cycle is appropriate.
@@ -474,7 +474,7 @@ Note: the linear scaling rule breaks down for very large batch sizes (batch size
 
 The end-of-warmup spike is caused by the **discontinuity in the LR derivative** at $t = W$. During warmup, the LR is increasing (positive derivative). At $t = W$, the cosine phase begins, where the LR immediately starts decreasing (negative derivative). The step from increasing to decreasing LR is abrupt, and if $\eta_{max}$ is large, the optimiser was taking increasingly large steps up to $t = W$ and now suddenly takes steps that are smaller and changing direction.
 
-A practical fix: use a cosine warmup (ramp up following the first quarter of a cosine curve) rather than linear warmup. This gives $d\eta/dt = 0$ at both $t = 0$ and $t = W$, ensuring smooth transitions.
+A practical fix: use a half-cosine warmup, $\eta_t = \eta_{max}(1 - \cos(\pi t / W))/2$, rather than linear warmup. This gives $d\eta/dt = 0$ at both $t = 0$ and $t = W$, ensuring smooth transitions.
 
 **Q: You are given a training run that converged to 87% validation accuracy. If you re-run training with the same schedule but set $\eta_{min} = 0$ (instead of $0.1 \times \eta_{max}$), what would you expect?**
 

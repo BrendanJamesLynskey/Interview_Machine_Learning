@@ -281,7 +281,8 @@ Precision = TP / (TP + FP)
 - **C** arrives at the same numeric value as A by different reasoning and is wrong for
   the same reason -- it confuses FN with FP. FN = 50 - 35 = 15; this is the false
   negative count, not the false positive count.
-- **D** computes accuracy: (TP + TN) / total = (35 + 950) / 1000 = 0.985.
+- **D** is not even the accuracy: it counts all 950 negatives as correct, but 5 of them are
+  false positives. Accuracy is (TP + TN) / total = (35 + 945) / 1000 = 0.980.
 
 ---
 
@@ -324,7 +325,7 @@ datasets, stabilises per-fold metric estimates, and makes the CV estimate more r
 INT8 uses 8 bits per value, FP32 uses 32 bits. The ratio is 32/8 = 4, so INT8 uses
 approximately 4x less memory for the weight tensors. Hardware with INT8 tensor cores
 (e.g., NVIDIA T4, A100) can execute INT8 matrix multiplications at significantly higher
-throughput than FP32 (up to 4x on NVIDIA Turing tensor cores). The accuracy drop is
+throughput (a T4 is rated at 130 INT8 TOPS versus 65 FP16 and 8.1 FP32 TFLOPS). The accuracy drop is
 typically less than 1 % for well-calibrated models quantised to INT8 with PTQ.
 
 - **A** is wrong: quantisation maps a continuous range to a discrete grid, which
@@ -424,8 +425,8 @@ Dividing logits by T > 1 before softmax flattens the distribution:
 ```
 soft_output = softmax(logits / T)
 ```
-At T = 4, a teacher producing logits [10, 2, 1] gives soft outputs far more similar
-to [0.97, 0.02, 0.01] vs [0.9999, 0.00005, 0.00005] at T=1. The inter-class structure
+At T = 4, a teacher producing logits [10, 2, 1] gives soft outputs of about
+[0.81, 0.11, 0.08], versus [0.9995, 0.0003, 0.0001] at T=1. The inter-class structure
 (class 1 is somewhat similar to class 2 but not class 3) is visible to the student,
 providing a richer training signal than hard labels.
 

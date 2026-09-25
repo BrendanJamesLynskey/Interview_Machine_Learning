@@ -225,9 +225,8 @@ from:
 
 - A) The requirement that the total number of weight updates per epoch remains constant.
 - B) The requirement that the expected parameter update per epoch is approximately
-     constant: with k times more samples per batch, the gradient is k times more
-     accurate, so each step is k times larger and the learning rate must compensate
-     by scaling k times.
+     constant: one step on a batch k times larger replaces k small-batch steps, so
+     (if the gradient changes little over those k steps) it must be k times larger.
 - C) The requirement that the gradient variance per sample is preserved, which requires
      scaling the learning rate proportionally to batch size.
 - D) The requirement that training loss at the end of the first epoch is the same
@@ -253,7 +252,7 @@ from:
 | 12 | B      | Advanced      |
 | 13 | A      | Advanced      |
 | 14 | D      | Advanced      |
-| 15 | C      | Advanced      |
+| 15 | B      | Advanced      |
 
 ---
 
@@ -505,26 +504,27 @@ The other three options directly address explosion:
 
 ---
 
-### Q15 - Answer: C
+### Q15 - Answer: B
 
-The linear scaling rule derivation (Goyal et al., 2017):
+The linear scaling rule derivation (Goyal et al., 2017, Section 2.1):
 
-With batch size B and learning rate lr, one SGD step updates parameters by:
+With batch size B and learning rate lr, k consecutive SGD steps on small batches update
+the parameters by:
 ```
-w <- w - lr * (1/B) * sum_{i=1}^{B} g_i
+w_{t+k} = w_t - lr * (1/B) * sum_{j<k} sum_{i in batch j} grad l(x_i, w_{t+j})
 ```
-The gradient variance per step is `sigma^2 / B` (variance of the mean of B samples).
+One step on a single batch of size kB with learning rate lr' gives:
+```
+w_{t+1} = w_t - lr' * (1/(kB)) * sum_{j<k} sum_{i in batch j} grad l(x_i, w_t)
+```
+If the gradients change little over the k steps (grad l(x, w_{t+j}) ≈ grad l(x, w_t)),
+the two updates match when lr' = k * lr. This keeps the expected parameter update per
+epoch (per sample seen) approximately constant. The assumption fails early in training,
+when the weights change quickly -- which is why Goyal et al. pair the rule with warm-up.
 
-For a fair comparison when scaling batch size from B to kB:
-- The gradient signal (mean) stays the same.
-- The gradient variance decreases by k.
-- To produce parameter updates of the same variance (same effective step distribution),
-  the learning rate should scale by k.
-
-This preserves the statistical properties of each update step.
-
-- **A** is partially related but not the precise derivation. The rule is about gradient
-  variance, not the number of updates.
-- **B** describes an incorrect mechanism: the gradient mean (not accuracy) stays constant
-  with more samples; variance decreases.
+- **A** is wrong: with k times larger batches there are k times FEWER updates per epoch;
+  the rule compensates for this rather than keeping the count constant.
+- **C** is wrong: the gradient variance argument leads to a different rule. The update
+  variance is lr^2 * sigma^2 / B, so keeping it constant when B grows by k requires
+  lr to grow by sqrt(k) -- the square-root scaling rule, not the linear one.
 - **D** is an empirical observation that sometimes holds, not the derivation.

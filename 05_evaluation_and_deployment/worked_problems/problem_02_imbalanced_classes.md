@@ -14,7 +14,7 @@ with a gradient boosted tree (XGBoost) trained on the raw dataset produce:
 
 ```
 Test set (stratified split, 100,000 transactions, 500 fraud):
-  Accuracy : 99.51 %
+  Accuracy : 97.44 %
   Precision: 0.12
   Recall   : 0.65
   F1       : 0.20
@@ -26,7 +26,7 @@ The product team considers this unacceptable. Your task is to improve the model.
 
 ### Part A (Fundamentals)
 
-Explain why 99.51 % accuracy corresponds to such poor F1. What does precision = 0.12 tell
+Explain why 97.44 % accuracy corresponds to such poor F1. What does precision = 0.12 tell
 you about the model's behaviour in practice?
 
 ---
@@ -89,16 +89,18 @@ and what you would report to stakeholders.
 
 ### Part A Solution
 
-**Why 99.51 % accuracy with poor F1:**
+**Why 97.44 % accuracy with poor F1:**
 
 With 500 fraud cases in 100,000 test samples (0.5 % prevalence), a model that **always
-predicts legitimate** achieves accuracy = 99.5 % while catching zero fraud. The model
-here (99.51 %) is only marginally better than this trivial baseline.
+predicts legitimate** achieves accuracy = 99.5 % while catching zero fraud. The metrics
+imply TP = 0.65 x 500 = 325, FN = 175 and FP = 325 / 0.12 - 325 = 2,383, so the model's
+accuracy is (100,000 - 2,383 - 175) / 100,000 = 97.44 % -- *worse* than the trivial
+baseline, even though it catches 65 % of fraud.
 
 Accuracy is dominated by correct negative predictions (TN). The 99,500 legitimate
-transactions are nearly all predicted correctly -- these contribute 99.5 percentage points
-to accuracy. The model's ability to detect fraud contributes only ~0.01 additional
-percentage points. Accuracy is therefore a nearly useless signal on this dataset.
+transactions contribute up to 99.5 percentage points to accuracy, so a few thousand
+false alarms move it far more than the detection of 500 fraud cases ever could.
+Accuracy is therefore a nearly useless signal on this dataset.
 
 **What precision = 0.12 means in practice:**
 

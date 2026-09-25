@@ -476,8 +476,10 @@ Adding L2 regularisation produces the Ridge problem:
 w* = (X^T X + lambda * I)^{-1} X^T y
 ```
 For any lambda > 0, (X^T X + lambda * I) is strictly positive definite and therefore
-invertible. Ridge selects the minimum-norm solution among all zero-training-error
-solutions, which typically generalises better than an arbitrary solution.
+invertible, so Ridge has a unique solution. As lambda -> 0+, the Ridge solution converges to
+the minimum-norm solution among all zero-training-error solutions; for lambda > 0 it trades a
+little training error for a smaller-norm, lower-variance solution, which typically generalises
+better than an arbitrary interpolating solution.
 
 - **A** is partially correct (OLS will achieve zero training error in the underdetermined
   case because the system is consistent) but the full statement is misleading -- there

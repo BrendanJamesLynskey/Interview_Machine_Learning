@@ -214,11 +214,12 @@ NVIDIA Triton Inference Server natively supports dynamic batching with configura
 
 **(b) Achieving 500 req/s on a single T4:**
 
-The T4 has 65 TOPS INT8 / 8.1 TFLOPS FP16. ResNet-50 requires ~4 GFLOPs per image.
+The T4 has 130 TOPS INT8 / 65 TFLOPS FP16 (tensor cores) / 8.1 TFLOPS FP32. ResNet-50 requires
+~4 billion multiply-adds per image (He et al. report $3.8 \times 10^9$), i.e. ~8 GFLOPs.
 
 Rough throughput upper bound (FP16):
 ```
-8.1 TFLOPS / 4 GFLOPS per image = ~2025 images/s (theoretical peak, no overhead)
+65 TFLOPS / 8 GFLOPs per image = ~8,000 images/s (theoretical peak, no overhead)
 ```
 
 In practice, memory bandwidth and kernel overhead reduce this to ~400-800 images/s for

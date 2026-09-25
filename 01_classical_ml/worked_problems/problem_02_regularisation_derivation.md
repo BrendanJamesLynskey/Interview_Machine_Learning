@@ -41,7 +41,7 @@ The OLS objective $\|y - X\beta\|_2^2$ has level sets that are ellipses (or elli
 
 **The Ridge solution**: expand the OLS ellipsoid until it first touches the circle. The circle is smooth -- the contact point is generically not on a coordinate axis, so both components are non-zero.
 
-**In $d$ dimensions**: the L1 ball has $2^d$ corners and $2d$ edges (face intersections), many of which lie on coordinate hyperplanes. As $d$ increases, the fraction of the L1 ball's surface that lies on coordinate hyperplanes grows, making sparsity increasingly likely.
+**In $d$ dimensions**: the L1 ball (a cross-polytope) has $2d$ corners, one on each coordinate axis, and $2^d$ facets; all of its lower-dimensional faces lie in coordinate subspaces. As $d$ increases, the fraction of the L1 ball's surface that lies on coordinate hyperplanes grows, making sparsity increasingly likely.
 
 ---
 
@@ -164,8 +164,9 @@ def lasso_coordinate_descent(X, y, lam, max_iter=1000, tol=1e-6):
             # Partial residual (residual when beta_j is removed)
             residual = y - X @ beta + X[:, j] * beta[j]
             
-            # Partial correlation
-            rho_j = X[:, j] @ residual / n
+            # Partial correlation (columns have unit norm, so no 1/n factor;
+            # dividing by n here would shrink every rho_j below lam and zero all weights)
+            rho_j = X[:, j] @ residual
             
             # Soft-thresholding update
             beta[j] = np.sign(rho_j) * max(abs(rho_j) - lam, 0)
@@ -193,7 +194,7 @@ print(f"Estimated non-zero features: {np.where(beta_est != 0)[0].tolist()}")
 print(f"True non-zero features:      {np.where(true_beta != 0)[0].tolist()}")
 ```
 
-**Why coordinate descent works for Lasso**: the subproblem for each coordinate has a closed-form solution (soft thresholding), so each step is $O(n)$ and the full pass over all coordinates is $O(nd)$. The coordinate descent converges because the Lasso objective is separable (if $X$ is orthonormal) and is convex.
+**Why coordinate descent works for Lasso**: the subproblem for each coordinate has a closed-form solution (soft thresholding), so each step is $O(n)$ and the full pass over all coordinates is $O(nd)$. The coordinate descent converges because the Lasso objective is convex and its non-smooth part (the L1 penalty) is separable across coordinates.
 
 ---
 

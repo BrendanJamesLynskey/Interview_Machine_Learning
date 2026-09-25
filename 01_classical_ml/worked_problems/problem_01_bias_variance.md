@@ -39,7 +39,7 @@ $$y_0 - \hat{f} = \underbrace{(y_0 - f(x_0))}_{\epsilon_0} + \underbrace{(f(x_0)
 
 **Step 3**: Expand the square. Cross terms vanish because:
 - $\epsilon_0$ is independent of $\mathcal{D}$ and has zero mean
-- $f(x_0) - \bar{f}(x_0)$ is a constant (not random in $\mathcal{D}$) with zero mean under the expectation structure
+- $f(x_0) - \bar{f}(x_0)$ is a constant (not random in $\mathcal{D}$), and it multiplies $\bar{f}(x_0) - \hat{f}(x_0)$, whose expectation over $\mathcal{D}$ is zero by the definition of $\bar{f}$
 
 $$\text{MSE}(x_0) = \underbrace{\sigma^2}_{\text{Irreducible noise}} + \underbrace{\left(f(x_0) - \bar{f}(x_0)\right)^2}_{\text{Bias}^2} + \underbrace{\mathbb{E}_\mathcal{D}\!\left[\left(\hat{f}(x_0) - \bar{f}(x_0)\right)^2\right]}_{\text{Variance}}$$
 
@@ -121,31 +121,31 @@ for d in degrees:
 
 ```
 Degree 1:
-  Mean Bias^2 : 0.2143
-  Mean Variance: 0.0038
+  Mean Bias^2 : 0.2017
+  Mean Variance: 0.0523
   Irreducible : 0.0900
-  Total MSE   : 0.3081
+  Total MSE   : 0.3440
 
 Degree 3:
-  Mean Bias^2 : 0.0089
-  Mean Variance: 0.0115
+  Mean Bias^2 : 0.0053
+  Mean Variance: 0.0652
   Irreducible : 0.0900
-  Total MSE   : 0.1104
+  Total MSE   : 0.1604
 
 Degree 9:
-  Mean Bias^2 : 0.0041
-  Mean Variance: 0.4882
+  Mean Bias^2 : 19.7990
+  Mean Variance: 4023.3700
   Irreducible : 0.0900
-  Total MSE   : 0.5823
+  Total MSE   : 4043.2590
 ```
 
 **Reading the results:**
 
-- **Degree 1 (linear model)**: high bias (linear line cannot fit a sinusoid), very low variance (a line has 2 parameters -- all training sets produce similar lines). Total MSE dominated by bias. This is **underfitting**.
+- **Degree 1 (linear model)**: high bias (linear line cannot fit a sinusoid), low variance (a line has 2 parameters -- all training sets produce similar lines). Total MSE dominated by bias. This is **underfitting**.
 
 - **Degree 3 (cubic model)**: balanced. Bias is very low (cubic can approximate a sinusoid well over $[0, 1]$), variance is low. Best total MSE. This is near the **sweet spot**.
 
-- **Degree 9 (degree-9 polynomial)**: very low bias (can fit the sinusoid exactly), but enormous variance (a degree-9 polynomial with 15 data points is near-interpolating and wiggles wildly between data points). Total MSE dominated by variance. This is **overfitting**.
+- **Degree 9 (degree-9 polynomial)**: in principle low bias (it can approximate the sinusoid closely), but enormous variance: a degree-9 polynomial fit to 15 random points is near-interpolating and swings wildly between them, especially near the ends of $[0, 1]$ where there may be no data. A few extreme fits even drag the *mean* prediction away from the truth, so the measured bias term is large too. Total MSE is dominated by variance. This is **overfitting**.
 
 ---
 
@@ -212,7 +212,7 @@ $$\text{Var}(\hat{\beta}_\lambda) = \sigma^2 V\, \text{diag}\!\left(\frac{\sigma
 
 Each diagonal term $\frac{\sigma_j^2}{(\sigma_j^2 + \lambda)^2}$ is a decreasing function of $\lambda$. Therefore the variance of each weight estimate decreases as $\lambda$ increases.
 
-**Conclusion**: Ridge regularisation introduces bias proportional to $\lambda$ and reduces variance proportional to $\lambda$. The optimal $\lambda$ minimises their sum, which cross-validation estimates.
+**Conclusion**: Ridge regularisation introduces bias that grows with $\lambda$ and reduces variance as $\lambda$ grows (neither change is linear in $\lambda$). The optimal $\lambda$ minimises their sum, which cross-validation estimates.
 
 ---
 

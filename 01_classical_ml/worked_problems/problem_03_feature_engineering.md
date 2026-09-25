@@ -298,6 +298,7 @@ df['QualxArea'] = df['OverallQual'] * df['GrLivArea']
 
 # Neighbourhood price tier (group rare neighbourhoods)
 # Compute quartiles of mean sale price by neighbourhood
+# (compute on training rows only in practice -- see Q1, item 3: this is target-derived)
 nbhd_price  = df.groupby('Neighborhood')['SalePrice'].mean()
 df['NbhdTier'] = pd.cut(
     df['Neighborhood'].map(nbhd_price),
@@ -413,7 +414,7 @@ A production-grade feature engineering pipeline must:
 ```python
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder, OneHotEncoder, FunctionTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import GradientBoostingRegressor
 
@@ -478,7 +479,7 @@ Target leakage occurs when information about the target variable $y$ is encoded 
 
 **Feature engineering sources of leakage:**
 
-1. **Imputation with test data statistics**: computing the mean of a feature over both train and test data and using it to fill missing values allows test labels to influence training imputation.
+1. **Imputation with test data statistics**: computing the mean of a feature over both train and test data and using it to fill missing values lets test-set information influence the training features.
 
 2. **Target encoding without cross-validation**: replacing a categorical feature with its mean target value, computed on the full training set, means each training example's feature value incorporates its own label.
 
@@ -486,7 +487,7 @@ Target leakage occurs when information about the target variable $y$ is encoded 
 
 4. **Temporal features with future information**: in time-series data, creating a 7-day rolling average that includes the current and future days for a training example that is in the past.
 
-5. **Normalisation using test statistics**: fitting a `StandardScaler` on train + test and then transforming both. The scaler learns the mean and std of the combined set, which contains test labels (implicitly through the feature distribution).
+5. **Normalisation using test statistics**: fitting a `StandardScaler` on train + test and then transforming both. The scaler learns the mean and std of the combined set, leaking information about the test set's feature distribution (not its labels) into training.
 
 **Detection**: if a new feature has suspiciously high predictive power (mutual information or correlation), investigate whether it contains target information.
 

@@ -94,7 +94,7 @@ Per-step displacement converges to $-\eta \times \text{sign}(g) = -10^{-3}$ (sin
 | Adam | $\approx -10^{-3}$ | $\approx -10^{-2}$ | Approximately sign gradient from step 1 |
 | AdamW | Same as Adam (weight decay acts separately) | $\approx -10^{-2}$ | Weight decay adds $-\lambda \eta \theta$ per step |
 
-**Key observation**: Adam makes larger progress initially (per step, for this moderate gradient scale) because it normalises the gradient, giving consistent $-\eta$ displacement per step from the start. SGD builds up velocity over $1/(1-\beta) = 10$ steps and then surpasses Adam's per-step displacement at steady state.
+**Key observation**: with these settings both optimisers take the same first step ($-10^{-3}$). Adam's step then stays at about $-\eta$ whatever the gradient scale, because it normalises the gradient; SGD's velocity builds up over $\sim 1/(1-\beta) = 10$ steps, so SGD moves further ($0.0414$ vs $0.01$ over 10 steps) and reaches $10\times$ Adam's per-step displacement at steady state. For a gradient 10$\times$ smaller, SGD's steps would shrink 10$\times$ while Adam's would not.
 
 ---
 
@@ -118,13 +118,13 @@ For $\theta_A$ (large, frequent gradients): $\hat{v}_t \approx g_A^2 = 1.0$ (con
 
 $$\text{step}_{A,reg} \approx \frac{10^{-3} \times 0.01 \times 1.0}{\sqrt{1.0} + 10^{-8}} \approx 10^{-5}$$
 
-Effective weight decay per step: $10^{-5}$ (much smaller than $\lambda \eta = 10^{-5}$, but this is coincidental -- the denominator $\sqrt{\hat{v}_t} \approx 1$ here).
+Effective weight decay per step: $10^{-5}$ (equal to $\lambda \eta = 10^{-5}$ here only because the denominator $\sqrt{\hat{v}_t} \approx 1$).
 
-For $\theta_B$ (small, sparse gradients): $\hat{v}_t \approx \mathbb{E}[g_B^2] = 0.1 \times 0.001^2 = 10^{-7}$ (EMA of sparse squares), so:
+For $\theta_B$ (small, sparse gradients): the combined gradient on its active steps is $g_B + \lambda\theta = 0.001 + 0.01 = 0.011$, so $\hat{v}_t \approx \mathbb{E}[g_{total}^2] = 0.1 \times 0.011^2 = 1.21 \times 10^{-5}$ (EMA of sparse squares), and:
 
-$$\text{step}_{B,reg} \approx \frac{10^{-3} \times 0.01 \times 1.0}{\sqrt{10^{-7}} + 10^{-8}} \approx \frac{10^{-5}}{3.16 \times 10^{-4}} \approx 0.0316$$
+$$\text{step}_{B,reg} \approx \frac{10^{-3} \times 0.01 \times 1.0}{\sqrt{1.21 \times 10^{-5}} + 10^{-8}} \approx \frac{10^{-5}}{3.48 \times 10^{-3}} \approx 2.9 \times 10^{-3}$$
 
-**The ratio is $0.0316 / 10^{-5} \approx 3160$.** The sparse-gradient parameter $\theta_B$ receives over 3000 times more regularisation than the dense-gradient parameter $\theta_A$ per weight-decay application. This is the opposite of what is usually intended: in practice, large weight matrix entries are the ones we most want to regularise.
+**The ratio is $2.9 \times 10^{-3} / 10^{-5} \approx 290$.** The sparse-gradient parameter $\theta_B$ receives nearly 300 times more regularisation than the dense-gradient parameter $\theta_A$ per weight-decay application. This is the opposite of what is usually intended: in practice, large weight matrix entries are the ones we most want to regularise.
 
 ### Config C: AdamW (decoupled weight decay)
 
@@ -208,7 +208,7 @@ def build_optimiser(name: str, model: nn.Module):
         total_epochs = 100
         def lr_lambda(epoch):
             if epoch < warmup_epochs:
-                return epoch / warmup_epochs
+                return (epoch + 1) / warmup_epochs   # epoch 0 must not train at LR 0
             progress = (epoch - warmup_epochs) / (total_epochs - warmup_epochs)
             return 0.5 * (1.0 + math.cos(math.pi * progress))
         sched = torch.optim.lr_scheduler.LambdaLR(opt, lr_lambda)
@@ -381,7 +381,7 @@ for name, param in model.named_parameters():
 
 Expected behaviour:
 - **SGD with momentum**: gradient norms are relatively large and stable, reflecting the accumulated velocity.
-- **Adam**: gradient norms in the update (after normalisation) are roughly $\eta / (\sqrt{\hat{v}_t} + \epsilon) \approx \eta$ per parameter, making the "normalised gradient norm" approximately the number of parameters times $\eta$.
+- **Adam**: gradient norms in the update (after normalisation) are roughly $\eta / (\sqrt{\hat{v}_t} + \epsilon) \approx \eta$ per parameter, making the norm of the normalised update approximately $\eta\sqrt{N}$ for $N$ parameters.
 - **AdamW**: same as Adam for the gradient component, but an additional constant offset from weight decay.
 
 ---
@@ -413,7 +413,7 @@ Task type?
 | Final accuracy (transformers) | Poor | Good | Best |
 | Convergence speed | Slow initially | Fast | Fast |
 | Hyperparameter sensitivity | High (LR, schedule critical) | Low | Moderate |
-| Memory per parameter | 1 (velocity only) | 3 (param + 2 moments) | 3 |
+| Memory per parameter | 2 (param + velocity) | 3 (param + 2 moments) | 3 |
 | Correct L2 regularisation | Yes | No | Yes |
 | Recommended default | Vision CNNs | Rapid prototyping | Most new projects |
 

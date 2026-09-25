@@ -67,22 +67,22 @@ $$= 0.4885 - 0.2 = 0.2885$$
 
 $$\hat{y} = \sigma(z^{[2]}) = \frac{1}{1 + e^{-0.2885}}$$
 
-$e^{-0.2885} \approx 0.7492$
+$e^{-0.2885} \approx 0.7494$
 
-$$\hat{y} = \frac{1}{1.7492} \approx 0.5717$$
+$$\hat{y} = \frac{1}{1.7494} \approx 0.5716$$
 
 **Binary cross-entropy loss** (true label $y = 1$):
 
-$$\mathcal{L} = -y \log \hat{y} - (1-y) \log(1-\hat{y}) = -1 \cdot \log(0.5717) - 0 \cdot \log(0.4283)$$
-$$= -\log(0.5717) \approx 0.5585$$
+$$\mathcal{L} = -y \log \hat{y} - (1-y) \log(1-\hat{y}) = -1 \cdot \log(0.5716) - 0 \cdot \log(0.4284)$$
+$$= -\log(0.5716) \approx 0.5593$$
 
 **Forward pass summary:**
 
 ```
 x1 = 1.0,   x2 = 0.5
 z^[1] = 0.45,   a^[1] = 0.6106
-z^[2] = 0.2885,  y_hat = 0.5717
-Loss = 0.5585
+z^[2] = 0.2885,  y_hat = 0.5716
+Loss = 0.5593
 ```
 
 ---
@@ -91,15 +91,15 @@ Loss = 0.5585
 
 For sigmoid output + binary cross-entropy, the combined gradient (derived in `backpropagation_derivation.md`) is:
 
-$$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} = \hat{y} - y = 0.5717 - 1 = -0.4283$$
+$$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} = \hat{y} - y = 0.5716 - 1 = -0.4284$$
 
 **Verification via chain rule:**
 
-$$\frac{\partial \mathcal{L}}{\partial \hat{y}} = -\frac{y}{\hat{y}} + \frac{1-y}{1-\hat{y}} = -\frac{1}{0.5717} + 0 = -1.7491$$
+$$\frac{\partial \mathcal{L}}{\partial \hat{y}} = -\frac{y}{\hat{y}} + \frac{1-y}{1-\hat{y}} = -\frac{1}{0.5716} + 0 = -1.7494$$
 
-$$\frac{d\hat{y}}{dz^{[2]}} = \sigma'(z^{[2]}) = \hat{y}(1-\hat{y}) = 0.5717 \times 0.4283 = 0.2449$$
+$$\frac{d\hat{y}}{dz^{[2]}} = \sigma'(z^{[2]}) = \hat{y}(1-\hat{y}) = 0.5716 \times 0.4284 = 0.2449$$
 
-$$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial \hat{y}} \cdot \frac{d\hat{y}}{dz^{[2]}} = (-1.7491)(0.2449) \approx -0.4283 \checkmark$$
+$$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial \hat{y}} \cdot \frac{d\hat{y}}{dz^{[2]}} = (-1.7494)(0.2449) \approx -0.4284 \checkmark$$
 
 ---
 
@@ -107,11 +107,11 @@ $$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial \hat{y}} \cdot \frac{d\hat
 
 **Gradient with respect to $w_2$:**
 
-$$\frac{\partial \mathcal{L}}{\partial w_2} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} \cdot \frac{\partial z^{[2]}}{\partial w_2} = \delta^{[2]} \cdot a^{[1]} = (-0.4283)(0.6106) \approx -0.2616$$
+$$\frac{\partial \mathcal{L}}{\partial w_2} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} \cdot \frac{\partial z^{[2]}}{\partial w_2} = \delta^{[2]} \cdot a^{[1]} = (-0.4284)(0.6106) \approx -0.2616$$
 
 **Gradient with respect to $b_2$:**
 
-$$\frac{\partial \mathcal{L}}{\partial b_2} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} \cdot \frac{\partial z^{[2]}}{\partial b_2} = \delta^{[2]} \cdot 1 = -0.4283$$
+$$\frac{\partial \mathcal{L}}{\partial b_2} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} \cdot \frac{\partial z^{[2]}}{\partial b_2} = \delta^{[2]} \cdot 1 = -0.4284$$
 
 **Interpretation:** Both gradients are negative. A gradient descent step will increase $w_2$ and $b_2$ (subtract the negative gradient), which will increase $z^{[2]}$, increasing $\hat{y}$ towards the target $y = 1$. This makes intuitive sense.
 
@@ -133,7 +133,7 @@ $$\sigma'(z^{[1]}) = a^{[1]}(1 - a^{[1]}) = 0.6106 \times (1 - 0.6106) = 0.6106 
 
 **Hidden error signal:**
 
-$$\delta^{[1]} = w_2 \cdot \delta^{[2]} \cdot \sigma'(z^{[1]}) = (0.8)(-0.4283)(0.2378) \approx -0.08152$$
+$$\delta^{[1]} = w_2 \cdot \delta^{[2]} \cdot \sigma'(z^{[1]}) = (0.8)(-0.4284)(0.2378) \approx -0.08152$$
 
 ---
 
@@ -163,7 +163,7 @@ $$\theta \leftarrow \theta - \eta \cdot \frac{\partial \mathcal{L}}{\partial \th
 
 $$w_2 \leftarrow 0.8 - 0.5 \times (-0.2616) = 0.8 + 0.1308 = 0.9308$$
 
-$$b_2 \leftarrow -0.2 - 0.5 \times (-0.4283) = -0.2 + 0.2142 = 0.0142$$
+$$b_2 \leftarrow -0.2 - 0.5 \times (-0.4284) = -0.2 + 0.2142 = 0.0142$$
 
 **Hidden layer:**
 
@@ -199,7 +199,7 @@ $$\hat{y}_{\text{new}} = \sigma(0.6027) \approx 0.6464$$
 
 $$\mathcal{L}_{\text{new}} = -\log(0.6464) \approx 0.4364$$
 
-The loss decreased from $0.5585$ to $0.4364$. The update moved in the correct direction.
+The loss decreased from $0.5593$ to $0.4364$ (0.4366 with unrounded intermediate values). The update moved in the correct direction.
 
 ---
 
@@ -276,20 +276,20 @@ print(f"Updated b2: {params['b2']}")
 z1     = 0.4500
 a1     = 0.6106
 z2     = 0.2885
-y_hat  = 0.5717
-loss   = 0.5585
+y_hat  = 0.5716
+loss   = 0.5593
 
-delta2  = -0.42830
-dW2     = -0.26155
-db2     = -0.42830
-delta1  = -0.08154
-dW1     = -0.08154, -0.04077
-db1     = -0.08154
+delta2  = -0.42837
+dW2     = -0.26158
+db2     = -0.42837
+delta1  = -0.08148
+dW1     = -0.08148, -0.04074
+db1     = -0.08148
 
-Updated W1: [[ 0.5408 -0.2796]]
-Updated b1: [0.1408]
-Updated W2: [[0.9308]]
-Updated b2: [0.0142]
+Updated W1: [[ 0.54073936 -0.27963032]]
+Updated b1: [0.14073936]
+Updated W2: [[0.93078926]]
+Updated b2: [0.01418417]
 ```
 
 ---

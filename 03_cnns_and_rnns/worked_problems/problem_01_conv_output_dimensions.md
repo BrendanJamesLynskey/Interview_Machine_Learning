@@ -231,9 +231,9 @@ Alternative: $S=2$, $K=2$, $P=0$:
 
 $$\text{out} = 2(7-1) + 2 - 0 = 12 + 2 = 14 \quad \checkmark$$
 
-Both work, but $K=4$, $P=1$ is preferred in practice because $K=2$ with $S=2$ can produce checkerboard artefacts due to uneven overlap in the kernel.
+Both work, and $K=4$, $P=1$ is a common choice in practice.
 
-**Checkerboard artefact explanation:** with $K=2$, $S=2$, each output pixel is covered by exactly one kernel position. With $K=4$, $S=2$, there is overlap, which averages contributions and reduces the grid-like pattern.
+**Checkerboard artefact explanation:** checkerboard artefacts come mainly from *uneven* overlap, which occurs when the kernel size is not a multiple of the stride (e.g. $K=3$, $S=2$): some output pixels then receive more kernel contributions than their neighbours (Odena et al., 2016, "Deconvolution and Checkerboard Artifacts"). Both $K=2$ and $K=4$ are multiples of $S=2$, so neither has uneven overlap; with $K=2$ each output pixel is covered by exactly one kernel position, while $K=4$ lets neighbouring outputs share input contributions. Learned weights can still produce artefacts in either case.
 
 A common alternative to transposed convolutions that avoids artefacts entirely: **bilinear upsample followed by a $3 \times 3$ conv** (learned upsampling without the overlap issues).
 

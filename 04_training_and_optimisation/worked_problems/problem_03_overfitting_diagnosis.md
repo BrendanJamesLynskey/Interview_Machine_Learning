@@ -172,7 +172,7 @@ When evaluation is performed in `model.train()` mode:
 - BatchNorm uses per-batch statistics instead of the running statistics.
 - Dropout (if present) remains active.
 
-Each evaluation mini-batch is normalised by its own statistics. A mini-batch of 32 validation images has very different statistics from the 50,000-image training distribution. The per-batch normalisation in eval effectively changes the feature distribution that the learned $\gamma/\beta$ parameters were calibrated for. This introduces stochastic noise into the evaluation metrics, making validation accuracy appear lower than the true inference performance.
+Each evaluation mini-batch is normalised by its own statistics. A mini-batch of 32 validation images has very different statistics from the 20,000-image training distribution. The per-batch normalisation in eval effectively changes the feature distribution that the learned $\gamma/\beta$ parameters were calibrated for. This introduces stochastic noise into the evaluation metrics, making validation accuracy appear lower than the true inference performance.
 
 Additionally, because training accuracy is computed with the same `model.train()` mode, it benefits from the fact that each training batch is normalised by its own (favourable) statistics -- effectively seeing a cleaner version of the data than validation sees.
 
@@ -497,7 +497,7 @@ This is unusual and has several possible explanations:
 
 1. **Strong augmentation on training set only.** The model sees augmented (harder) versions of images during training, making the training loss appear higher. At evaluation (with clean images), the model performs better. This is normal and expected when augmentation is applied correctly (to training only).
 
-2. **`model.eval()` is called for evaluation but not training accuracy computation.** BatchNorm in eval mode uses well-calibrated running statistics; in train mode it uses noisy per-batch statistics. If training accuracy is computed in eval mode but validation is in eval mode, both are correct. If training accuracy is computed in train mode, it may be inflated by BatchNorm noise.
+2. **`model.eval()` is called for evaluation but not training accuracy computation.** BatchNorm in eval mode uses well-calibrated running statistics; in train mode it uses noisy per-batch statistics (and dropout, if present, is active). If training metrics are computed in train mode while validation uses eval mode, the training numbers can look worse than validation. If both are computed in eval mode, they are directly comparable.
 
 3. **Training loss includes regularisation; validation loss does not.** If the reported training loss is $\mathcal{L}_{task} + \lambda \|\theta\|^2$ (total regularised loss) and the val loss is $\mathcal{L}_{task}$ only, then training loss will always be higher by $\lambda \|\theta\|^2$.
 

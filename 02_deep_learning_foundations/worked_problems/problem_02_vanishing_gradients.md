@@ -76,9 +76,9 @@ $$(\mathbf{W}^{[l+1]})^{\top} \delta^{[l+1]} \approx 0.1 \times 256 \times \delt
 
 The weight contribution amplifies the gradient. The combined effect on each scalar path through the network:
 
-$$\left|\frac{\partial \mathcal{L}}{\partial z^{[1]}}\right| \sim (0.1 \times 0.25)^9 \times |\delta^{[10]}| \approx (0.025)^9 \approx 4 \times 10^{-16}$$
+$$\left|\frac{\partial \mathcal{L}}{\partial z^{[1]}}\right| \sim (0.1 \times 0.25)^9 \times |\delta^{[10]}| \approx (0.025)^9 \approx 4 \times 10^{-15}$$
 
-(This uses 0.1 for a single weight times 0.25 for the sigmoid derivative per layer. With 256 inputs summed, the actual factor per layer is $256 \times 0.1 \times 0.25 = 6.4$, giving $(6.4)^9 \approx 8 \times 10^7$ -- a gradient explosion for the first few layers from the weight term, but the small fan-out to the next layer brings it back down. The exact behaviour depends on the full matrix multiplication.)
+(This uses 0.1 for a single weight times 0.25 for the sigmoid derivative per layer. With 256 inputs summed, the actual factor per layer is $256 \times 0.1 \times 0.25 = 6.4$, giving $(6.4)^9 \approx 1.8 \times 10^7$ -- a gradient explosion for the first few layers from the weight term, but the small fan-out to the next layer brings it back down. The exact behaviour depends on the full matrix multiplication.)
 
 **Problem 3: Saturated sigmoid outputs at initialisation**
 
@@ -98,9 +98,9 @@ $$\frac{\text{Var}[\delta^{[1]}]}{\text{Var}[\delta^{[10]}]} \approx \prod_{l=1}
 
 In saturation: $\sigma'(z) \approx 0$, making the ratio essentially zero. Before saturation is reached, using $\sigma'(z) \approx 0.25$:
 
-$$\approx (0.1 \times 0.25)^{18} = (0.025)^{18} \approx 10^{-38}$$
+$$\approx (0.1 \times 0.25)^{18} = (0.025)^{18} \approx 1.5 \times 10^{-29}$$
 
-(18 factors for 9 weight-activation pairs, each appearing squared in the variance calculation). This is below machine epsilon -- gradients at layer 1 are numerically indistinguishable from zero.
+(18 factors for 9 weight-activation pairs, each appearing squared in the variance calculation). Relative to the layer-10 gradient this is far below float32 precision -- gradients at layer 1 are numerically negligible.
 
 ---
 
@@ -180,6 +180,8 @@ This prevents the pre-activations from drifting into the saturated region of sig
 import torch
 import torch.nn as nn
 import math
+
+torch.manual_seed(0)
 
 # ---- Build the broken network ----
 
@@ -273,43 +275,49 @@ analyse_gradient_norms(broken_net, "Broken: sigmoid + constant init")
 analyse_gradient_norms(fixed_net,  "Fixed:  ReLU + He init")
 ```
 
-**Typical output (values are indicative; exact numbers depend on random inputs):**
+**Output** (exact numbers depend on the random seed and inputs):
 
 ```
 ==================================================
 Gradient norms: Broken: sigmoid + constant init
 ==================================================
-Layer      Weight grad norm   Bias grad norm
+Layer          Weight grad norm     Bias grad norm
 --------------------------------------------------
-Layer 1      0.000000e+00       0.000000e+00
-Layer 2      0.000000e+00       0.000000e+00
-Layer 3      0.000000e+00       0.000000e+00
-Layer 4      2.300000e-38       9.100000e-39
-Layer 5      1.400000e-29       5.500000e-30
-Layer 6      8.700000e-21       3.400000e-21
-Layer 7      5.300000e-13       2.100000e-13
-Layer 8      3.200000e-06       1.300000e-06
-Layer 9      1.950000e+00       7.700e-01
-Output       2.120000e+00       8.400e-01
+Layer 1             0.000000e+00        0.000000e+00
+Layer 2             0.000000e+00        0.000000e+00
+Layer 3             0.000000e+00        0.000000e+00
+Layer 4             0.000000e+00        0.000000e+00
+Layer 5             0.000000e+00        0.000000e+00
+Layer 6             0.000000e+00        0.000000e+00
+Layer 7             0.000000e+00        0.000000e+00
+Layer 8             0.000000e+00        0.000000e+00
+Layer 9             0.000000e+00        0.000000e+00
+Output             1.702923e+00        1.064328e-01
 
 ==================================================
-Gradient norms: Fixed: ReLU + He init
+Gradient norms: Fixed:  ReLU + He init
 ==================================================
-Layer      Weight grad norm   Bias grad norm
+Layer          Weight grad norm     Bias grad norm
 --------------------------------------------------
-Layer 1      4.820000e-01       6.100e-02
-Layer 2      5.230000e-01       6.700e-02
-Layer 3      4.970000e-01       6.300e-02
-Layer 4      5.110000e-01       6.500e-02
-Layer 5      4.890000e-01       6.200e-02
-Layer 6      5.050000e-01       6.400e-02
-Layer 7      4.940000e-01       6.300e-02
-Layer 8      5.180000e-01       6.600e-02
-Layer 9      4.990000e-01       6.300e-02
-Output       5.070000e-01       6.400e-02
+Layer 1             2.999578e+00        2.039860e-01
+Layer 2             3.070092e+00        1.987337e-01
+Layer 3             3.396517e+00        2.289493e-01
+Layer 4             3.435634e+00        2.297530e-01
+Layer 5             3.993123e+00        2.350298e-01
+Layer 6             4.405427e+00        2.483508e-01
+Layer 7             4.511259e+00        2.496863e-01
+Layer 8             5.224291e+00        2.830614e-01
+Layer 9             5.453127e+00        2.849378e-01
+Output             5.723630e+00        3.169962e-01
 ```
 
-The broken network shows gradients decaying to zero (and below float32 minimum) for early layers. The fixed network shows approximately uniform gradient norms across all layers.
+Every hidden-layer gradient in the broken network is *exactly* zero, not merely tiny. Because all output
+weights are equal, all 10 logits are identical, and the gradient reaching the last hidden layer is
+$0.1 \times \sum_k (p_k - y_k) = 0$ (softmax probabilities and the one-hot label both sum to 1). Symmetry
+therefore kills the signal before vanishing gradients even come into play; with pre-activations of order
+$0.1 \times 256 \times 0.5 = 12.8$, sigmoid saturation ($\sigma'(12.8) \approx 3 \times 10^{-6}$) would make
+the gradients negligible anyway. The fixed network's gradient norms stay within a factor of about 2 across
+all layers.
 
 ---
 
@@ -347,7 +355,7 @@ Batch normalisation further stabilises training by keeping pre-activations in th
 
 1. **Constant initialisation causes permanent symmetry collapse.** The network's effective capacity is reduced to one neuron per layer, regardless of width. This cannot be recovered during training.
 
-2. **Sigmoid gradients shrink by at most $4\times$ per layer.** After 10 layers, early-layer gradients are six or more orders of magnitude smaller than output-layer gradients.
+2. **Sigmoid gradients shrink by at least $4\times$ per layer** (from the activation derivative alone). After 10 layers, early-layer gradients are six or more orders of magnitude smaller than output-layer gradients.
 
 3. **No single fix addresses all problems.** Zero init is worse than constant init. ReLU alone does not fix symmetry. He init alone does not fix vanishing gradients with sigmoid. The correct fix requires the right activation-initialisation pair.
 

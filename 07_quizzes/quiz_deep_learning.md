@@ -427,8 +427,10 @@ Self-attention:
 - Attention matrix: O(T^2 * d_model) -- each of T query positions attends to T keys,
   each of dimension d_model.
 
-At T = 1024: attention matrix computation ~ T^2 * 512 ≈ 5.4 * 10^8 multiplications,
-which dominates both the projection O(T) term and the convolution O(T) term.
+At T = 1024: the T x T part (Q K^T and the weighted sum of V) costs 2 * T^2 * 512 ≈ 1.07 * 10^9
+multiply-adds, exactly equal to the four projections (4 * T * 512^2 ≈ 1.07 * 10^9) because
+T = 2 * d_model here. Self-attention totals ≈ 2.1 * 10^9 versus ≈ 8.1 * 10^8 for the
+convolution (3 * T * 512^2), and for T > 2 * d_model the T^2 term dominates.
 
 - **A** is wrong: convolution is O(T) which is dominated by attention's O(T^2) term.
 - **C** is wrong: they differ asymptotically (T vs T^2).
@@ -470,4 +472,4 @@ than test-time activation a, causing a distribution mismatch that degrades test 
 - **A** is wrong: dropout does not directly constrain weight norms.
 - **C** is wrong: 1/(1-p) can exceed 1 (e.g., p=0.5 gives 2x scale), expanding not
   bounding activations.
-- **D** is wrong: exactly p fraction of neurons are zeroed, so 1-p fraction remain active.
+- **D** is wrong: in expectation a fraction p of neurons are zeroed, so a fraction 1-p remain active.

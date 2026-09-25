@@ -195,11 +195,11 @@ print(f"  Huber: {huber(outlier_pred, outlier_targets):.2e}  <- robust")
 
 # Expected output:
 # Clean data only:
-#   MSE:   75000000.00      (reasonable)
-#   Huber: 50000.00         (reasonable, different scale)
+#   MSE:   81250000.00      (errors of 5-10k, squared)
+#   Huber: 40625000.00      (all errors < delta: half the MSE)
 # With one outlier listing:
-#   MSE:   5.40e+11         (enormous due to 2.7M error)
-#   Huber: 1.35e+08         (manageable, linear not quadratic)
+#   MSE:   1.47e+12         (grows ~18,000x due to the 2.71M error)
+#   Huber: 2.69e+10         (grows ~660x: linear, not quadratic, in the outlier)
 ```
 
 ---
@@ -296,7 +296,7 @@ where $(a, p, n)$ are anchor, positive (same identity), and negative (different 
 
 Face verification requires a learned distance metric, not a class label prediction. The model should output an embedding space where same-identity images cluster together and different-identity images are well-separated. This is a **metric learning** problem.
 
-Triplet loss directly optimises this objective: it pushes same-identity pairs closer and different-identity pairs further apart, with the margin $m$ ensuring a minimum separation. With 100k identities, there is no practical way to add a softmax classification head (100k output classes with 5 examples each would severely overfit).
+Triplet loss directly optimises this objective: it pushes same-identity pairs closer and different-identity pairs further apart, with the margin $m$ ensuring a minimum separation. A plain softmax classification head over 100k identities with only 5 images each does not explicitly make embeddings compact within an identity; margin-based softmax variants such as ArcFace (below) were designed to fix exactly this.
 
 **Recommended setup:**
 - Batch size: 200 samples (40 identities × 5 images each)
@@ -312,7 +312,7 @@ ArcFace adds an angular margin $m$ to the ground-truth class angle, enforcing in
 
 **Wrong choice: Standard softmax cross-entropy**
 
-Softmax cross-entropy treats each identity as a separate class. With 100k identities × 5 images, the class-conditional distributions are tiny. The model cannot learn a generalisable embedding -- it memorises identity-specific features rather than learning invariant representations (pose, lighting, expression). On unseen identities (the actual test case for face verification), the softmax output is meaningless.
+Softmax cross-entropy treats each identity as a separate class. With 100k identities × 5 images, the class-conditional distributions are tiny. The model cannot learn a generalisable embedding -- it memorises identity-specific features rather than learning invariant representations (pose, lighting, expression). On unseen identities (the actual test case for face verification), the softmax output itself is meaningless: only the penultimate-layer embedding can be used, and plain softmax training does not explicitly optimise it for verification.
 
 **PyTorch implementation (triplet loss):**
 
@@ -554,6 +554,6 @@ print(f"Unweighted CE only:      {unweighted_ce.item():.4f}")
 
 3. **Multi-label ≠ multi-class.** Multi-class (mutually exclusive): softmax + categorical CE. Multi-label (independent binary): sigmoid + BCE per label. Mixing them up is one of the most common classification mistakes.
 
-4. **Metric learning requires metric learning losses.** When the task is "are these two things similar?" rather than "what class is this?", use contrastive, triplet, or NT-Xent loss. Softmax classification only works when all test-time classes are seen during training.
+4. **Metric learning requires metric learning losses.** When the task is "are these two things similar?" rather than "what class is this?", use contrastive, triplet, or NT-Xent loss. A softmax classifier's outputs only cover classes seen during training; for unseen classes, use the learned embedding (and train it with a metric-learning or margin-based loss).
 
 5. **Robustness to label noise matters.** Real-world labels are often imperfect. Huber, MAE, and label smoothing all provide different forms of robustness. MSE is highly sensitive to label errors.
