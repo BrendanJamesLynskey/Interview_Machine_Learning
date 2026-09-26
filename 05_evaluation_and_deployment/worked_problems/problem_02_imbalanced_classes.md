@@ -63,15 +63,16 @@ Instead of resampling, you decide to use **focal loss** as the training objectiv
 ### Part E (Advanced)
 
 You apply random oversampling (duplicate minority samples until 50/50 balance) and retrain.
-The new test metrics are:
+The resampling was applied before the train/validation split, so the validation split is
+also 50/50. The new validation metrics are:
 
 ```
-Precision: 0.61
+Precision: 0.88
 Recall   : 0.82
-F1       : 0.70
+F1       : 0.85
 ```
 
-However, during deployment the model flags 12 % of all transactions as fraud (the product
+However, during deployment the model flags about 12 % of all transactions as fraud (the product
 team's budget allows investigating only 0.5 %). Identify the problem and propose a
 threshold calibration strategy.
 
@@ -301,15 +302,39 @@ training effort concentrates on ambiguous or misclassified cases.
 
 **Problem identification:**
 
-The model was trained on a 50/50 oversampled training set but deployed on a real dataset
+There are two linked problems.
+
+**1. The metrics were measured on the wrong class distribution.** Recall (the true-positive
+rate) does not depend on prevalence, but precision does. From the 50/50 validation split:
+
+```
+FPR = R * (1 - P) / P = 0.82 * 0.12 / 0.88 = 0.112   (11.2 % of legitimate transactions flagged)
+```
+
+At the real 0.5 % prevalence, per 1,000,000 transactions:
+
+```
+True positives  = 0.82  * 5,000   =   4,100
+False positives = 0.112 * 995,000 = 111,259
+Flagged         = 115,359  (11.5 %, i.e. the ~12 % seen in deployment)
+Precision       = 4,100 / 115,359 = 0.036
+```
+
+The "0.88 precision" was an artefact of evaluating on oversampled data — the same mistake
+Part C(b) warns about for SMOTE. Resampling must be applied to the training data only;
+validation and test sets must keep the deployment prevalence.
+
+**2. The scores are calibrated to the wrong prior.** The model was trained on a 50/50 oversampled training set but deployed on a real dataset
 where fraud prevalence is 0.5 %. The model has been trained to be "optimistic" about the
 fraud class -- its probability scores are not calibrated to the true deployment prior.
 
 Specifically, the model's internal decision boundary was learned for a 50 % fraud prior.
 At the default threshold of 0.5, the model predicts fraud whenever its internal score
 exceeds 0.5, but a score of 0.5 in a 50/50 world corresponds to a much lower probability
-in a 0.5 % world. The model is flagging 12 % of transactions because its threshold is
-far too low for the deployment prevalence.
+in a 0.5 % world. The model is flagging ~12 % of transactions because its threshold is
+far too low for the deployment prevalence. Even a perfect ranking could put at most
+5,000 true frauds in a 0.5 % budget; at 115,359 flags per million the analysts would see
+roughly 27 legitimate transactions for every fraud.
 
 **Threshold calibration strategy:**
 
